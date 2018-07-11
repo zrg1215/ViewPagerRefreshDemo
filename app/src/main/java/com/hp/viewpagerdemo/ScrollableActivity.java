@@ -11,7 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.hp.viewpagerdemo.adapter.ScrollableAdapter;
 import com.hp.viewpagerdemo.scrollablelayout.ScrollableLayout;
 
-public class ScrollableActivity extends AppCompatActivity {
+public class ScrollableActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
     private String[] TITLES = {"语文", "数学", "英语", "化学", "物理", "生物"};
 
     SwipeRefreshLayout mSwipeRefreshLayout;
@@ -20,6 +20,8 @@ public class ScrollableActivity extends AppCompatActivity {
     ViewPager mViewPager;
 
     private ScrollableAdapter mAdapter;
+    private int mCurrentIndex;
+    Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,14 +33,14 @@ public class ScrollableActivity extends AppCompatActivity {
         mTabLayout = (TabLayout) findViewById(R.id.tab_layout);
         mViewPager = (ViewPager) findViewById(R.id.view_pager);
 
-        final Handler handler = new Handler(Looper.getMainLooper());
+        mHandler = new Handler(Looper.getMainLooper());
 
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                loadData();
+                refreshDate();
 
-                handler.postDelayed(new Runnable() {
+                mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         mSwipeRefreshLayout.setRefreshing(false);
@@ -46,16 +48,68 @@ public class ScrollableActivity extends AppCompatActivity {
                 }, 1000);
             }
         });
-        mAdapter = new ScrollableAdapter(getSupportFragmentManager(), TITLES);
+
+        mScrollableLayout.setOnScrollListener(new ScrollableLayout.OnScrollListener() {
+            @Override
+            public void onScroll(int currentY, int maxY) {
+                if (currentY <= 0) {
+                    mSwipeRefreshLayout.setEnabled(true);
+                } else {
+                    mSwipeRefreshLayout.setEnabled(false);
+                }
+            }
+        });
+
+        mAdapter = new ScrollableAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(mAdapter);
-        mViewPager.setCurrentItem(0);
-        mViewPager.setOffscreenPageLimit(TITLES.length - 1);
         mTabLayout.setupWithViewPager(mViewPager);
+        mViewPager.addOnPageChangeListener(this);
+        loadData();
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        mCurrentIndex = position;
+        mScrollableLayout.getHelper().setCurrentScrollableContainer(mAdapter.getFragments().get(position));
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
 
     }
 
     private void loadData() {
-        String[] newTitles = {"语文2", "数学2", "英语2", "化学2", "物理2", "生物2"};
-        mAdapter.setTitles(newTitles);
+        mAdapter.setTitles(TITLES);
+        mViewPager.setOffscreenPageLimit(TITLES.length - 1);
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //adapter没有刷新完成，故需要延迟，
+                mScrollableLayout.getHelper().setCurrentScrollableContainer(mAdapter.getFragments().get(mCurrentIndex));
+            }
+        }, 500);
+
     }
+
+    private void refreshDate() {
+        String[] newTitles = {"语文2", "数学2", "英语2"};
+        final int currentIndex = mCurrentIndex > newTitles.length ? 0 : mCurrentIndex;
+        mAdapter.setTitles(newTitles);
+        mViewPager.setOffscreenPageLimit(newTitles.length - 1);
+        mViewPager.setCurrentItem(currentIndex);
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //adapter没有刷新完成，故需要延迟，
+                mScrollableLayout.getHelper().setCurrentScrollableContainer(mAdapter.getFragments().get(currentIndex));
+            }
+        }, 500);
+    }
+
+
 }

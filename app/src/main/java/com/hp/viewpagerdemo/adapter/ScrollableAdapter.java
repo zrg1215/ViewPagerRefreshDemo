@@ -7,7 +7,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.ViewGroup;
 
-import com.hp.viewpagerdemo.EmptyFragment;
+import com.hp.viewpagerdemo.ListFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.List;
 public class ScrollableAdapter extends FragmentStatePagerAdapter {
     private String[] mTitles;
     private boolean mIsSorted;//是否排序完成
-    private List<EmptyFragment> mFragments = new ArrayList<>();
+    private List<ListFragment> mFragments = new ArrayList<>();
 
     public ScrollableAdapter(FragmentManager fm) {
         super(fm);
@@ -32,7 +32,7 @@ public class ScrollableAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        EmptyFragment fragment = EmptyFragment.newInstance(mTitles[position]);
+        ListFragment fragment = ListFragment.newInstance(mTitles[position]);
         mFragments.add(fragment);
         Log.e("zrg", "getItem: 当前位置position=" + position);
         return fragment;
@@ -66,12 +66,12 @@ public class ScrollableAdapter extends FragmentStatePagerAdapter {
         notifyDataSetChanged();
     }
 
-    public List<EmptyFragment> getFragments() {
+    public List<ListFragment> getFragments() {
         if (!mIsSorted) {
             //需要排序
-            List<EmptyFragment> fragments = new ArrayList<>();
+            List<ListFragment> fragments = new ArrayList<>();
             for (String title : mTitles) {
-                for (EmptyFragment fragment : mFragments) {
+                for (ListFragment fragment : mFragments) {
                     if (TextUtils.equals(title, fragment.getTitle())) {
                         fragments.add(fragment);
                         break;
