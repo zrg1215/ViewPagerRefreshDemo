@@ -11,6 +11,9 @@ import android.support.v7.app.AppCompatActivity;
 import com.hp.viewpagerdemo.adapter.ScrollableAdapter;
 import com.hp.viewpagerdemo.scrollablelayout.ScrollableLayout;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ScrollableActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
     private String[] TITLES = {"语文", "数学", "英语", "化学", "物理", "生物"};
 
@@ -22,6 +25,7 @@ public class ScrollableActivity extends AppCompatActivity implements ViewPager.O
     private ScrollableAdapter mAdapter;
     private int mCurrentIndex;
     Handler mHandler;
+    private List<ListFragment> mFragments = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +79,7 @@ public class ScrollableActivity extends AppCompatActivity implements ViewPager.O
     @Override
     public void onPageSelected(int position) {
         mCurrentIndex = position;
-        mScrollableLayout.getHelper().setCurrentScrollableContainer(mAdapter.getFragments().get(position));
+        mScrollableLayout.getHelper().setCurrentScrollableContainer(mFragments.get(position));
     }
 
     @Override
@@ -84,32 +88,29 @@ public class ScrollableActivity extends AppCompatActivity implements ViewPager.O
     }
 
     private void loadData() {
-        mAdapter.setTitles(TITLES);
-        mViewPager.setOffscreenPageLimit(TITLES.length - 1);
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                //adapter没有刷新完成，故需要延迟，
-                mScrollableLayout.getHelper().setCurrentScrollableContainer(mAdapter.getFragments().get(mCurrentIndex));
-            }
-        }, 500);
+        mFragments.clear();
+        for (String title : TITLES) {
+            mFragments.add(ListFragment.newInstance(title));
+        }
 
+        mAdapter.setTitles(TITLES, mFragments);
+        mViewPager.setOffscreenPageLimit(TITLES.length - 1);
+        mScrollableLayout.getHelper().setCurrentScrollableContainer(mFragments.get(mCurrentIndex));
     }
 
     private void refreshDate() {
         String[] newTitles = {"语文2", "数学2", "英语2"};
-        final int currentIndex = mCurrentIndex > newTitles.length ? 0 : mCurrentIndex;
-        mAdapter.setTitles(newTitles);
+        final int currentIndex = mCurrentIndex > (newTitles.length - 1) ? (newTitles.length - 1) : mCurrentIndex;
+
+        mFragments.clear();
+        for (String title : newTitles) {
+            mFragments.add(ListFragment.newInstance(title));
+        }
+
+        mAdapter.setTitles(newTitles, mFragments);
         mViewPager.setOffscreenPageLimit(newTitles.length - 1);
         mViewPager.setCurrentItem(currentIndex);
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                //adapter没有刷新完成，故需要延迟，
-                mScrollableLayout.getHelper().setCurrentScrollableContainer(mAdapter.getFragments().get(currentIndex));
-            }
-        }, 500);
+        mScrollableLayout.getHelper().setCurrentScrollableContainer(mFragments.get(currentIndex));
     }
-
 
 }

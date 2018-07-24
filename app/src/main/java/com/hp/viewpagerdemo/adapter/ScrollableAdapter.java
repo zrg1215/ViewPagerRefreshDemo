@@ -3,13 +3,11 @@ package com.hp.viewpagerdemo.adapter;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.ViewGroup;
 
 import com.hp.viewpagerdemo.ListFragment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,24 +16,16 @@ import java.util.List;
 
 public class ScrollableAdapter extends FragmentStatePagerAdapter {
     private String[] mTitles;
-    private boolean mIsSorted;//是否排序完成
-    private List<ListFragment> mFragments = new ArrayList<>();
+    private List<ListFragment> mFragments;
 
     public ScrollableAdapter(FragmentManager fm) {
         super(fm);
     }
 
-    public ScrollableAdapter(FragmentManager fm, String[] titles) {
-        super(fm);
-        mTitles = titles;
-    }
-
     @Override
     public Fragment getItem(int position) {
-        ListFragment fragment = ListFragment.newInstance(mTitles[position]);
-        mFragments.add(fragment);
         Log.e("zrg", "getItem: 当前位置position=" + position);
-        return fragment;
+        return mFragments.get(position);
     }
 
     @Override
@@ -59,31 +49,9 @@ public class ScrollableAdapter extends FragmentStatePagerAdapter {
         return POSITION_NONE;
     }
 
-    public void setTitles(String[] titles) {
+    public void setTitles(String[] titles, List<ListFragment> fragments) {
         mTitles = titles;
-        mIsSorted = false;
-        mFragments.clear();
+        mFragments = fragments;
         notifyDataSetChanged();
-    }
-
-    public List<ListFragment> getFragments() {
-        if (!mIsSorted) {
-            //需要排序
-            List<ListFragment> fragments = new ArrayList<>();
-            for (String title : mTitles) {
-                for (ListFragment fragment : mFragments) {
-                    if (TextUtils.equals(title, fragment.getTitle())) {
-                        fragments.add(fragment);
-                        break;
-                    }
-                }
-            }
-            //重新为mFragments赋值
-            mFragments.clear();
-            mFragments.addAll(fragments);
-            mIsSorted = true;
-        }
-
-        return mFragments;
     }
 }
